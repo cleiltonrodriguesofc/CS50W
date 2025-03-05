@@ -1,0 +1,117 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+<div class="nav-bar2">
+    <h2>Listing: {{ listing.title }}</h2>
+</div>
+
+<div class="option-form">
+    <form action="{% url 'toggle_watchlist' listing.id %}" method="POST">
+        {% csrf_token %}
+        <input type="checkbox" name="toggle-watchlist" onchange="this.form.submit()" 
+            {% if listing in user.watchlist.all %} checked {% endif %}>
+        Add to Watchlist
+    </form>
+    
+    {% if user.is_authenticated and user == listing.user and listing.is_active %}
+    <form  action="{% url 'toggle_listing' listing.id %}" method="POST">
+        {% csrf_token %}
+        <button name="toggle-listing" type="submit" class="btn-close-auction">Close Auction</button>
+    </form>
+    {% endif %}
+
+</div>
+<div class="listings">
+    {% if  user == listing.winner and not listing.is_active %}
+        <div class="winner">
+            <h1>Congratulations! You won the auction.</h1>
+        </div>
+    {% elif not listing.is_active %}
+        <div class="winner">
+            {% if listing.winner %}
+                <h1>Winner: {{ listing.winner }}</h1>
+            {% else %}
+                <h1>No winner.</h1>
+            {% endif %}
+        </div>
+   
+    {% endif %}
+    
+    <div class="listing-page">
+        <div class="listing-image">
+            {% if listing.image_url %}
+                <img class="image" src="{{ listing.image_url }}" alt="{{ listing.tile }}">
+            {% else %}
+                <p>No image available.</p>
+            {% endif %}
+        </div>
+    </div>
+    <h1>{{ bid.listing.id }}</h1>
+
+    <div class="listing-info">
+        <p>{{ listing.description }}</p>
+            {% if not biggest_bid %}
+                <h2>Price: ${{ listing.starting_bid }}</h2>
+            {% else %}
+                <h2>Current Bid: ${{ biggest_bid.amount }}</h2> 
+            {% endif %}
+        <div class="all-bids">
+            <h3>All bids: </h3>
+            <select class="select-bid" name="bid" id="">
+                {% for bid in bids %}
+                    <option value="{{ bid.amount }}">{{ bid.user }} - {{ bid.amount }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if message %}
+            <div>{{ message }}</div>
+        {% endif %}
+
+        <div class="space-bid">
+            {% if listing.is_active %}
+            <form action="{% url 'listing' listing.id %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input class="form-control" type="text" name="amount" placeholder="Amount">
+                </div>
+                <input class="btn-primary" type="submit" value="Place Bid">
+            </form>
+        {% endif %}
+        </div>
+        
+        <h3>Details:</h3>
+        <ul>
+            <li>Category: {{ listing.category }}</li>
+            <li>Created by: {{ listing.user }}</li>
+        </ul>
+    </div>
+
+    <div class="div-comments">
+        <div class="comments-list">
+            {% if comments %}
+            <h3>Comments:</h3>
+            <ul>
+                {% for comment in comments %}
+                    <li>{{ comment.user }}: {{ comment.comment }}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+                <h3>No comments yet.</h3>
+            {% endif %}
+        </div>
+        <div class="comment-form">
+            <form action="{% url 'listing' listing.id %}" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <h3>Leave a comment:</h3>
+                    <textarea class="space-comment" name="comment" rows="4" cols="50" placeholder="Write your comment here..."></textarea>
+                </div>
+                <input class="btn-primary" type="submit" value="Post Comment">
+            </form>
+        </div>
+    </div>
+    
+</div>
+
+{% endblock %}
