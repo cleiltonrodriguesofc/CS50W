@@ -1,4 +1,4 @@
-# cleiltonrodriguesofc
+# Google Search Clone
 This project is a Google Search Clone using HTML and CSS.
 
 The index.html file is the main page of the Google Search Clone. There are also two additional pages:
